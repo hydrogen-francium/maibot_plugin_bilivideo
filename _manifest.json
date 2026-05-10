@@ -1,0 +1,36 @@
+{
+  "manifest_version": 1,
+  "name": "BiliVideo Plugin",
+  "version": "2.0.0",
+  "description": "B站视频插件：自动识别链接、渲染完整B站风格卡片、下载视频并合并转发",
+  "author": {
+    "name": "hydrogen-francium"
+  },
+  "license": "MIT",
+  "homepage_url": "https://github.com/hydrogen-francium/maibot_plugin_bilivideo",
+  "repository_url": "https://github.com/hydrogen-francium/maibot_plugin_bilivideo",
+  "host_application": {
+    "min_version": "0.10.0"
+  },
+  "plugin_info": {
+    "is_built_in": false,
+    "plugin_type": "utility",
+    "components": [
+      {
+        "type": "event_handler",
+        "name": "bili_link_detect",
+        "description": "自动识别消息中的B站视频链接，渲染卡片并下载视频"
+      }
+    ],
+    "features": [
+      "自动识别B站视频链接（BV号、长链、短链）",
+      "完整B站风格卡片：封面、标题、6项统计、UP主信息、简介、弹幕样本、热门评论",
+      "Playwright + HTML 渲染高清卡片图片",
+      "自动下载视频（可配置画质和大小限制）",
+      "卡片+视频合并转发为一条消息",
+      "智能排除引用消息中的链接",
+      "60秒防重复处理，自动清理缓存"
+    ]
+  },
+  "id": "hydrogen-francium.bilivideo_plugin"
+}

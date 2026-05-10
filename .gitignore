@@ -1,0 +1,47 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+MANIFEST
+
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Plugin local config override (用户本地配置，不入库)
+config.local.toml
+.env
+
+# Runtime data (不提交运行时生成的文件)
+data/
+cache/
+logs/
+
+# Playwright 本地浏览器缓存
+.playwright/
+
+# 插件运行时生成的资源
+**/cards/*.png
+**/videos/*.mp4
+**/videos/*.flv
+**/videos/*.video
+**/videos/*.audio
+**/videos/*.part

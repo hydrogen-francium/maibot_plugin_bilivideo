@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>{{ title }}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif;
+    background: #fff;
+  }
+  .bili-card {
+    width: 760px;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  /* 顶部哔哩哔哩标头 */
+  .header {
+    background: #fb7299;
+    padding: 16px 24px;
+  }
+  .brand {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  /* 封面 */
+  .cover-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #f4f5f7;
+  }
+  .cover-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .duration-badge {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+
+  /* 主体 */
+  .body {
+    padding: 24px 28px 22px 28px;
+  }
+  .title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #18191f;
+    line-height: 1.45;
+    margin-bottom: 14px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .pubdate {
+    color: #9499a0;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  /* 6 统计胶囊 */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+  .stat-pill {
+    background: #f4f5f7;
+    border-radius: 22px;
+    padding: 8px 4px;
+    text-align: center;
+    color: #61666d;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .stat-pill .icon {
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  /* UP主 */
+  .uploader-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid #f1f2f3;
+    border-bottom: 1px solid #f1f2f3;
+    margin-bottom: 22px;
+  }
+  .uploader-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fb7299, #ff85a4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .uploader-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .uploader-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .uploader-label {
+    color: #18191f;
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .uploader-up-tag {
+    background: #fb7299;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    line-height: 1.2;
+  }
+  .uploader-fans {
+    color: #9499a0;
+    font-size: 14px;
+  }
+
+  /* 简介 */
+  .desc-section {
+    margin-bottom: 22px;
+  }
+  .section-title {
+    color: #18191f;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .desc-content {
+    background: #f4f5f7;
+    border-radius: 8px;
+    padding: 14px 16px;
+    color: #61666d;
+    font-size: 14px;
+    line-height: 1.7;
+    min-height: 50px;
+    text-align: center;
+  }
+  .desc-content.has-content {
+    text-align: left;
+  }
+
+  /* 弹幕 */
+  .danmaku-section {
+    margin-bottom: 22px;
+  }
+  .danmaku-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .danmaku-pill {
+    background: #f4f5f7;
+    border-radius: 6px;
+    padding: 8px 14px;
+    color: #61666d;
+    font-size: 14px;
+    line-height: 1.4;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 热门评论 */
+  .comment-section {
+    margin-bottom: 0;
+  }
+  .comment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .comment-item {
+    display: flex;
+    gap: 12px;
+  }
+  .comment-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #b3d9ff, #d0bfff);
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .comment-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .comment-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .comment-name {
+    color: #61666d;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .comment-level {
+    background: #00aeec;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 3px;
+    line-height: 1.4;
+  }
+  .comment-level.lv6 { background: #fb7299; }
+  .comment-level.lv5 { background: #ff7600; }
+  .comment-level.lv4 { background: #fbbd08; }
+  .comment-level.lv3 { background: #00aeec; }
+  .comment-level.lv2 { background: #6d757a; }
+  .comment-text {
+    color: #18191f;
+    font-size: 15px;
+    line-height: 1.55;
+    margin-bottom: 8px;
+    word-break: break-word;
+  }
+  .comment-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #9499a0;
+    font-size: 12px;
+  }
+  .comment-likes {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+</style>
+</head>
+<body>
+<div class="bili-card">
+  <!-- 哔哩哔哩标头 -->
+  <div class="header">
+    <span class="brand">哔哩哔哩</span>
+  </div>
+
+  <!-- 封面 -->
+  <div class="cover-wrap">
+    {% if cover_data_uri %}
+    <img src="{{ cover_data_uri }}" alt="cover">
+    {% endif %}
+    {% if duration_text %}
+    <div class="duration-badge">{{ duration_text }}</div>
+    {% endif %}
+  </div>
+
+  <div class="body">
+    <!-- 标题 -->
+    <div class="title">{{ title }}</div>
+    {% if pubdate_text %}
+    <div class="pubdate">{{ pubdate_text }}</div>
+    {% endif %}
+
+    <!-- 6统计胶囊 -->
+    <div class="stats">
+      <div class="stat-pill"><span class="icon">▶</span><span>{{ view_count }}</span></div>
+      <div class="stat-pill"><span class="icon">💬</span><span>{{ danmaku_count }}</span></div>
+      <div class="stat-pill"><span class="icon">👍</span><span>{{ like_count }}</span></div>
+      <div class="stat-pill"><span class="icon">🪙</span><span>{{ coin_count }}</span></div>
+      <div class="stat-pill"><span class="icon">⭐</span><span>{{ favorite_count }}</span></div>
+      <div class="stat-pill"><span class="icon">↗</span><span>{{ share_count }}</span></div>
+    </div>
+
+    <!-- UP主 -->
+    <div class="uploader-row">
+      <div class="uploader-avatar">
+        {% if uploader_avatar_uri %}
+        <img src="{{ uploader_avatar_uri }}" alt="up">
+        {% else %}
+        UP
+        {% endif %}
+      </div>
+      <div class="uploader-info">
+        <span class="uploader-label">UP主：{{ uploader }}</span>
+        <span class="uploader-up-tag">UP主</span>
+      </div>
+      {% if uploader_fans_text %}
+      <span class="uploader-fans">{{ uploader_fans_text }}粉丝</span>
+      {% endif %}
+    </div>
+
+    <!-- 简介 -->
+    <div class="desc-section">
+      <div class="desc-content {% if desc %}has-content{% endif %}">{{ desc if desc else "-" }}</div>
+    </div>
+
+    <!-- 弹幕 -->
+    {% if danmaku_samples %}
+    <div class="danmaku-section">
+      <div class="section-title">弹幕</div>
+      <div class="danmaku-list">
+        {% for dm in danmaku_samples %}
+        <div class="danmaku-pill">{{ dm }}</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- 热门评论 -->
+    {% if hot_comments %}
+    <div class="comment-section">
+      <div class="section-title">热门评论</div>
+      <div class="comment-list">
+        {% for c in hot_comments %}
+        <div class="comment-item">
+          <div class="comment-avatar">
+            {% if c.avatar_uri %}
+            <img src="{{ c.avatar_uri }}" alt="">
+            {% else %}
+            {{ c.name_short }}
+            {% endif %}
+          </div>
+          <div class="comment-body">
+            <div class="comment-header">
+              <span class="comment-name">{{ c.user_name }}</span>
+              {% if c.user_level %}
+              <span class="comment-level lv{{ c.user_level }}">Lv.{{ c.user_level }}</span>
+              {% endif %}
+            </div>
+            <div class="comment-text">{{ c.content }}</div>
+            <div class="comment-meta">
+              {% if c.pubdate_text %}<span>{{ c.pubdate_text }}</span>{% endif %}
+              <span class="comment-likes">👍 {{ c.like_text }}</span>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+# MaiBot B站视频插件配置文件
+
+[plugin]
+enabled = true
+config_version = "2.0.0"
+
+# B站账号配置（可选，但强烈推荐填写）
+# - 不填可以解析公开视频，但下载画质有限制
+# - 填写后可下载高画质视频、获取完整字幕等
+[bilibili]
+sessdata = ""
+bili_jct = ""
+# 如何获取：
+# 1. 浏览器登录 bilibili.com
+# 2. F12 打开开发者工具 → Application → Cookies
+# 3. 复制 SESSDATA 和 bili_jct 的值
+
+# 自动链接识别配置
+[auto_detect]
+enabled = true
+use_image_card = true  # 使用图片卡片（false则发送纯文本）
+ignore_replied_messages = true  # 忽略引用消息中的链接（避免重复处理）
+card_save_path = "./data/bilivideo/cards"
+
+# 视频下载配置
+[download]
+enabled = true
+quality = "720P"  # 默认画质：360P / 480P / 720P / 1080P / 1080P+ / 4K
+max_size_mb = 100  # 最大文件大小（MB）
+max_duration_seconds = 600  # 最大视频时长（秒），超过则跳过下载，0表示不限制
+allow_quality_fallback = true  # 超过大小限制时自动降画质
+save_path = "./data/bilivideo/videos"
+
+# 缓存管理配置
+[cache]
+auto_clean = true  # 自动清理缓存
+max_age_hours = 24  # 文件最大保留时间（小时）
+clean_interval_hours = 6  # 清理间隔（小时）

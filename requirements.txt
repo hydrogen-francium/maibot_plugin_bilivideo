@@ -1,0 +1,10 @@
+# 依赖项
+# bilibili-api 的正确包名是 bilibili-api-python
+bilibili-api-python>=16.2.0
+httpx>=0.24.0
+aiohttp>=3.9.0
+jinja2>=3.1.0
+playwright>=1.40.0
+
+# 安装完 playwright 后还需要执行（首次使用）：
+#   python -m playwright install chromium
