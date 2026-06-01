@@ -196,12 +196,14 @@ class BiliVideoDownloader:
             audio_url = audio_stream.url if audio_stream else None
 
             if audio_url:
-                # DASH 流，需要分别下载并合并
+                # DASH 流：视频/音频独立，并行下载省一半时间
                 temp_video = output_path.with_suffix(".video")
                 temp_audio = output_path.with_suffix(".audio")
                 try:
-                    await self._download_stream(video_url, temp_video)
-                    await self._download_stream(audio_url, temp_audio)
+                    await asyncio.gather(
+                        self._download_stream(video_url, temp_video),
+                        self._download_stream(audio_url, temp_audio),
+                    )
                     await self._merge_av(temp_video, temp_audio, output_path)
                 except Exception as e:
                     logger.error(f"下载/合并失败: {e}")

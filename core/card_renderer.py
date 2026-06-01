@@ -252,25 +252,8 @@ class BiliCardRenderer:
             )
             page = await context.new_page()
             try:
-                await page.set_content(html, wait_until="networkidle", timeout=15000)
-
-                # 等待图片加载完成
-                try:
-                    await page.evaluate(
-                        """
-                        Promise.all(Array.from(document.images).map(img => {
-                            if (img.complete) return Promise.resolve();
-                            return new Promise(resolve => {
-                                img.onload = resolve;
-                                img.onerror = resolve;
-                            });
-                        }))
-                        """
-                    )
-                except Exception:
-                    pass
-
-                await page.wait_for_timeout(200)
+                # 所有图片已内联为 data-uri，无外部网络请求，domcontentloaded 即可
+                await page.set_content(html, wait_until="domcontentloaded", timeout=10000)
 
                 # 截取卡片元素
                 card = await page.query_selector(".bili-card")

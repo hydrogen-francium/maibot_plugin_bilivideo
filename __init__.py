@@ -1,12 +1,12 @@
 """
 MaiBot B站视频插件
-功能：自动识别B站链接 → 渲染卡片 → 下载视频 → 合并转发
+整合了链接识别、视频下载、字幕读取和AI总结功能
 """
 
 from .plugin import BiliVideoPlugin
 
-__version__ = "2.0.0"
+__version__ = "1.0.0"
 __plugin_name__ = "maibot_plugin_bilivideo"
-__author__ = "hydrogen-francium"
+__author__ = "Integrated from link_resolver, biliread, biliVideo"
 
 __all__ = ["BiliVideoPlugin"]

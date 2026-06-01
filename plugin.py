@@ -289,41 +289,43 @@ class BiliLinkDetectHandler(BaseEventHandler):
                 f"弹幕样本={len(video_info.danmaku_samples)}, 热评={len(video_info.hot_comments)})"
             )
 
-            # 6. 渲染卡片
+            # 6+7. 卡片渲染与视频下载并行执行（互不依赖）
             use_image = self.get_config("auto_detect.use_image_card", True)
             card_save_path = self.get_config("auto_detect.card_save_path", "./data/bilivideo/cards")
-            card_image_b64 = None
 
-            if use_image:
+            download_enabled = self.get_config("download.enabled", True)
+            max_duration = self.get_config("download.max_duration_seconds", 600)
+            duration_ok = (max_duration <= 0) or (video_info.duration <= max_duration)
+            quality = self.get_config("download.quality", "720P")
+            max_size_mb = self.get_config("download.max_size_mb", 100)
+            allow_fallback = self.get_config("download.allow_quality_fallback", True)
+            save_path = self.get_config("download.save_path", "./data/bilivideo/videos")
+
+            async def _do_render_card() -> Optional[str]:
+                if not use_image:
+                    return None
                 try:
                     card_renderer = BiliCardRenderer(save_path=card_save_path)
                     card_path = await card_renderer.render_card(video_info)
                     if card_path and card_path.exists():
-                        card_image_b64 = base64.b64encode(card_path.read_bytes()).decode("utf-8")
                         logger.info(f"{self.log_prefix} 卡片渲染成功: {card_path.name}")
-                    else:
-                        logger.warning(f"{self.log_prefix} 卡片渲染失败，回退纯文本")
+                        return base64.b64encode(card_path.read_bytes()).decode("utf-8")
+                    logger.warning(f"{self.log_prefix} 卡片渲染失败，回退纯文本")
                 except Exception as e:
                     logger.error(f"{self.log_prefix} 卡片渲染异常: {e}")
                     import traceback
                     logger.error(traceback.format_exc())
+                return None
 
-            # 7. 下载视频
-            download_enabled = self.get_config("download.enabled", True)
-            max_duration = self.get_config("download.max_duration_seconds", 600)
-            duration_ok = (max_duration <= 0) or (video_info.duration <= max_duration)
-
-            video_path = None
-            if download_enabled and duration_ok:
-                quality = self.get_config("download.quality", "720P")
-                max_size_mb = self.get_config("download.max_size_mb", 100)
-                allow_fallback = self.get_config("download.allow_quality_fallback", True)
-                save_path = self.get_config("download.save_path", "./data/bilivideo/videos")
-
+            async def _do_download_video() -> Optional[Path]:
+                if not download_enabled:
+                    return None
+                if not duration_ok:
+                    logger.info(f"{self.log_prefix} 视频时长 {video_info.duration}s 超过 {max_duration}s，跳过下载")
+                    return None
                 logger.info(
                     f"{self.log_prefix} 开始下载: BV={video_info.bvid}, 画质={quality}, 上限={max_size_mb}MB"
                 )
-
                 downloader = BiliVideoDownloader(
                     credential=credential,
                     save_path=save_path,
@@ -331,20 +333,25 @@ class BiliLinkDetectHandler(BaseEventHandler):
                     allow_quality_fallback=allow_fallback,
                 )
                 try:
-                    video_path = await downloader.download_video(
+                    vp = await downloader.download_video(
                         bvid=video_info.bvid,
                         quality=quality,
                         page_index=0,
                     )
-                    if video_path and video_path.exists():
-                        size_mb = video_path.stat().st_size / 1024 / 1024
-                        logger.info(f"{self.log_prefix} 视频下载完成: {video_path.name} ({size_mb:.2f}MB)")
+                    if vp and vp.exists():
+                        size_mb = vp.stat().st_size / 1024 / 1024
+                        logger.info(f"{self.log_prefix} 视频下载完成: {vp.name} ({size_mb:.2f}MB)")
+                    return vp
                 except Exception as e:
                     logger.error(f"{self.log_prefix} 视频下载失败: {e}")
                     import traceback
                     logger.error(traceback.format_exc())
-            elif download_enabled and not duration_ok:
-                logger.info(f"{self.log_prefix} 视频时长 {video_info.duration}s 超过 {max_duration}s，跳过下载")
+                    return None
+
+            card_image_b64, video_path = await asyncio.gather(
+                _do_render_card(),
+                _do_download_video(),
+            )
 
             # 8. 发送
             await self._send_response(
@@ -369,14 +376,16 @@ class BiliLinkDetectHandler(BaseEventHandler):
         card_image_b64: Optional[str],
         video_path: Optional[Path],
     ):
-        """发送响应消息（卡片+视频，合并转发）"""
-        # 准备视频base64
-        video_b64 = None
+        """发送响应消息（卡片+视频，合并转发）
+
+        视频走 file:// 本地路径而非 base64：
+        - 避免 mp4 base64 被 MessageProcessBase._process_single_segment 兜底
+          拼成 [video:<巨大base64>] 写入聊天历史/LLM 上下文，撑爆请求体
+        - 省掉读盘+编码+大体积 ws 帧，发送显著加速
+        """
+        video_uri = None
         if video_path and video_path.exists():
-            try:
-                video_b64 = base64.b64encode(video_path.read_bytes()).decode("utf-8")
-            except Exception as e:
-                logger.error(f"{self.log_prefix} 读取视频失败: {e}")
+            video_uri = "file:///" + str(video_path.resolve()).replace("\\", "/").lstrip("/")
 
         # 卡片内容
         if card_image_b64:
@@ -385,9 +394,9 @@ class BiliLinkDetectHandler(BaseEventHandler):
             card_type, card_content = "text", _render_text_fallback(video_info)
 
         try:
-            if video_b64:
-                # 合并转发：卡片+视频
-                logger.info(f"{self.log_prefix} 通过合并转发发送")
+            if video_uri:
+                # 合并转发：卡片+视频（videourl 走本地文件路径）
+                logger.info(f"{self.log_prefix} 通过合并转发发送 video_uri={video_uri}")
                 sender_id = "10000"
                 sender_name = "B站解析"
 
@@ -395,7 +404,7 @@ class BiliLinkDetectHandler(BaseEventHandler):
                     stream_id=stream_id,
                     messages_list=[
                         (sender_id, sender_name, [(card_type, card_content)]),
-                        (sender_id, sender_name, [("video", video_b64)]),
+                        (sender_id, sender_name, [("videourl", video_uri)]),
                     ],
                 )
                 if not ok:
@@ -421,11 +430,11 @@ class BiliLinkDetectHandler(BaseEventHandler):
                 else:
                     await self.send_text(stream_id=stream_id, text=card_content)
 
-                if video_b64:
+                if video_uri:
                     await self.send_custom(
                         stream_id=stream_id,
-                        message_type="video",
-                        content=video_b64,
+                        message_type="videourl",
+                        content=video_uri,
                     )
                 logger.info(f"{self.log_prefix} 兜底分开发送成功")
             except Exception as e2:

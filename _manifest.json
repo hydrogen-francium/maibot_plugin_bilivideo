@@ -4,11 +4,9 @@
   "version": "2.0.0",
   "description": "B站视频插件：自动识别链接、渲染完整B站风格卡片、下载视频并合并转发",
   "author": {
-    "name": "hydrogen-francium"
+    "name": "Integrated from link_resolver, biliread, biliVideo"
   },
   "license": "MIT",
-  "homepage_url": "https://github.com/hydrogen-francium/maibot_plugin_bilivideo",
-  "repository_url": "https://github.com/hydrogen-francium/maibot_plugin_bilivideo",
   "host_application": {
     "min_version": "0.10.0"
   },
@@ -32,5 +30,5 @@
       "60秒防重复处理，自动清理缓存"
     ]
   },
-  "id": "hydrogen-francium.bilivideo_plugin"
+  "id": "maibot.bilivideo_plugin"
 }
